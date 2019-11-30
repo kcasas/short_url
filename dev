@@ -1,0 +1,14 @@
+#!/bin/sh
+case $1 in
+bi | build_image)
+    docker build --tag short_url:dev .
+    break
+    ;;
+dcp)
+    docker container prune
+    break
+    ;;
+*)
+    echo "No command"
+    ;;
+esac
