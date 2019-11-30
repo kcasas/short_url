@@ -2,16 +2,12 @@ package log
 
 import (
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"os"
 )
 
 func init() {
-	logLevel, ok := os.LookupEnv("log_level")
-	if !ok {
-		logLevel = logrus.InfoLevel.String()
-	}
-
-	SetupLogger(logLevel)
+	SetupLogger(viper.GetString("LOG_LEVEL"))
 }
 
 // SetupLogger sets up global logrus settings

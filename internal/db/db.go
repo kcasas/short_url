@@ -1,21 +1,27 @@
 package db
 
 import (
+	"errors"
 	"fmt"
-	"os"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 var defaultDB *gorm.DB
 
 func init() {
-	dsn := os.Getenv("DB_DSN")
+	dsn := viper.GetString("DB_DSN")
+	if len(dsn) <= 0 {
+		logrus.Fatal(errors.New("DB_DSN is empty"))
+	}
+
 	var err error
 	defaultDB, err = New("mysql", dsn)
 	if err != nil {
-		panic(fmt.Errorf("unable to connect to database: %w", err))
+		logrus.Fatal(fmt.Errorf("unable to connect to database: %w", err))
 	}
 }
 
