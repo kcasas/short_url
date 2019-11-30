@@ -6,7 +6,7 @@
 #####################################
 
 GOPATH := $(shell go env GOPATH)
-UNAME := ${shell uname -s}
+HOSTOS := ${shell go env GOHOSTOS}
 
 run_dev:
 	go run cmd/web/server.go
@@ -23,11 +23,11 @@ fast-lint:
 	golangci-lint run --fast  ./... && echo "Perfect!"
 
 ensure_migrator:
-	hash migrate.$(UNAME)-amd64 || curl -L https://github.com/golang-migrate/migrate/releases/download/v4.7.0/migrate.$(UNAME)-amd64.tar.gz | tar xvz -C $(GOPATH)/bin
+	hash migrate.$(HOSTOS)-amd64 || curl -L https://github.com/golang-migrate/migrate/releases/download/v4.7.0/migrate.$(HOSTOS)-amd64.tar.gz | tar xvz -C $(GOPATH)/bin
 
 migrate:
 	make ensure_migrator
-	migrate.$(UNAME)-amd64 -database "mysql://$(DB_DSN)" -path migrations/ -verbose up
+	$(GOPATH)/bin/migrate.$(HOSTOS)-amd64 -database "mysql://$(DB_DSN)" -path migrations/ -verbose up
 
 test:
 	go test -cover -race ./...
