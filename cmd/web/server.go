@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,8 +20,13 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
+	webPort, ok := os.LookupEnv("WEB_PORT")
+	if !ok {
+		webPort = "8080"
+	}
+
 	srv := &http.Server{
-		Addr: "0.0.0.0:8080",
+		Addr: fmt.Sprintf("0.0.0.0:%s", webPort),
 		// Good practice to set timeouts to avoid Slowloris attacks.
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
@@ -43,6 +49,7 @@ func main() {
 
 	// Block until we receive our signal.
 	<-c
+	logrus.Infof("Closing the server on %v", srv.Addr)
 
 	defer db.Close()
 	// Create a deadline to wait for.

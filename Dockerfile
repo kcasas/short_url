@@ -9,21 +9,7 @@ FROM golang@sha256:c94c082fbfd00975dfef89d439ff9e0059e1816175093f5a2e80541acb8f9
 WORKDIR /app
 
 COPY . .
-COPY REVISION /REVISION
 
 RUN go mod tidy
 
-# FROM gcr.io/docker-images-180022/base/alpine:3.10
-
-# WORKDIR /app
-
-# COPY --from=builder /app/bin bin
-# COPY --from=builder /app/scripts scripts
-# COPY --from=builder /app/migrations migrations
-
 EXPOSE 8080
-
-# User nobody
-USER 65534
-
-ENTRYPOINT ["dumb-init"]

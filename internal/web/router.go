@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/kcasas/short_url/internal/web/api/expand"
+	"github.com/kcasas/short_url/internal/web/api/shorten"
 )
 
 func Router() *mux.Router {
@@ -14,8 +16,8 @@ func Router() *mux.Router {
 	})
 
 	api := router.PathPrefix("/api").Subrouter()
-	api.Methods(http.MethodPost).Headers("Content-Type", "application/json")
-	api.HandleFunc("/shorten", ShortenHandler)
+	api.HandleFunc("/shorten", shorten.Handler).Methods(http.MethodPost)
+	api.HandleFunc("/expand", expand.Handler).Methods(http.MethodPost)
 
 	return router
 }
