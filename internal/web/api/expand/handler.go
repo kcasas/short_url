@@ -6,6 +6,7 @@ import (
 
 	"github.com/kcasas/short_url/internal/db"
 	"github.com/kcasas/short_url/internal/db/models"
+	"github.com/sirupsen/logrus"
 )
 
 type RequestPayload struct {
@@ -21,7 +22,7 @@ func Handler(rw http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
-		rw.Write([]byte(err.Error()))
+		_, _ = rw.Write([]byte(err.Error()))
 		return
 	}
 
@@ -33,7 +34,8 @@ func Handler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(rw).Encode(&JsonResponse{
+	err = json.NewEncoder(rw).Encode(&JsonResponse{
 		Long: urlModel.LongURL,
 	})
+	logrus.Error(err)
 }

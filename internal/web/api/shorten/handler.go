@@ -6,6 +6,7 @@ import (
 
 	"github.com/kcasas/short_url/internal/db"
 	"github.com/kcasas/short_url/internal/urlconv"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -19,14 +20,14 @@ func Handler(rw http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
-		rw.Write([]byte(err.Error()))
+		_, _ = rw.Write([]byte(err.Error()))
 		return
 	}
 
 	err = payload.validate()
 	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
-		rw.Write([]byte(err.Error()))
+		_, _ = rw.Write([]byte(err.Error()))
 		return
 	}
 
@@ -43,8 +44,9 @@ func Handler(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 	}
 
-	json.NewEncoder(rw).Encode(&JsonResponse{
+	err = json.NewEncoder(rw).Encode(&JsonResponse{
 		Short: shorturl,
 		Long:  payload.URL,
 	})
+	logrus.Error(err)
 }

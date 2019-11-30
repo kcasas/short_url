@@ -12,7 +12,7 @@ func Router() *mux.Router {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/z/ping", func(rw http.ResponseWriter, _ *http.Request) {
-		rw.Write([]byte("ok"))
+		_, _ = rw.Write([]byte("ok"))
 	})
 
 	api := router.PathPrefix("/api").Subrouter()
