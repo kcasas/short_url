@@ -2,11 +2,11 @@ package shorten
 
 import (
 	"encoding/json"
-	"math"
 	"net/http"
 
 	"github.com/kcasas/short_url/internal/db"
 	"github.com/kcasas/short_url/internal/urlconv"
+	"github.com/spf13/viper"
 )
 
 type JsonResponse struct {
@@ -32,8 +32,8 @@ func Handler(rw http.ResponseWriter, r *http.Request) {
 
 	dbAdapter := db.NewAdapter(db.DB())
 	prefixer := urlconv.NewRandomizer(
-		int64(math.Pow(62, 2)),
-		int64(math.Pow(62, 3)-1),
+		viper.GetInt64("PREFIX_MIN"),
+		viper.GetInt64("PREFIX_MAX"),
 	)
 
 	shortener := urlconv.NewShortener(dbAdapter, prefixer)
