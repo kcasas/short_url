@@ -20,8 +20,12 @@ start)
     docker-compose up -d --remove-orphans
     
     break;;
+stop)
+    docker-compose down
+    
+    break;;
 logs)
-    docker-compose logs
+    docker-compose logs -f
     
     break;;
 flush_dns)
@@ -38,10 +42,27 @@ case $2 in
 
         break;;
     *)
-    echo "unsupported service command"
+cat << EndOfMessage
+    Dev Service Tool
+        commands:
+            {service} shell    "opens a shell on the container"
+            {service} logs     "show logs of service"
+EndOfMessage
     ;;
     esac;;
 *)
-    echo "invalid command"
+cat << EndOfMessage
+    Dev Tool
+        commands:
+            bm | build_machine "builds the docker machine with name default"
+            bi | build_image   "build the app image"
+            start              "starts all the services"
+            stop               "stops all the services"
+            logs               "show all logs"
+        
+        service commands: app | db | dns | nginx-proxy
+            {service} shell    "opens a shell on the container"
+            {service} logs     "show logs of service"
+EndOfMessage
     ;;
 esac
