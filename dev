@@ -5,11 +5,21 @@ ensure_docker_ip()
 }
 
 case $1 in
+install_docker)
+    hash brew || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    brew cask install docker-toolbox
+
+    break;;
 bm | build_machine)
     docker-machine create default
-    eval "$(docker-machine env default)"
     ensure_docker_ip
-
+    cat << EOF > .resolver
+nameserver $(docker-machine ip $2)
+port 53
+EOF
+    break;;
+load | load_resolver) 
+    mv .resolver /etc/resolver/kc
     break;;
 bi | build_image)
     docker build --tag short_url:dev .
@@ -54,6 +64,7 @@ EndOfMessage
 cat << EndOfMessage
     Dev Tool
         commands:
+            install_docker     "install docker-toolbox"
             bm | build_machine "builds the docker machine with name default"
             bi | build_image   "build the app image"
             start              "starts all the services"
