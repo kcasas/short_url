@@ -1,0 +1,83 @@
+version: '3'
+services:
+  # mysql database
+  db:
+    image: mysql:5.6
+    container_name: db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      SERVICE_NAME: mysql
+  # url shortener app
+  app:
+    depends_on:
+      - db
+      - nginx-proxy-letsencrypt
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: short_url:dev
+    command: ["make", "run_dev"]
+    container_name: app
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8080:8080"
+    environment:
+      DB_DSN: root:${DB_PASSWORD}@tcp(db:3306)/short_url
+      SERVICE_NAME: app
+      VIRTUAL_HOST: ${DOMAIN}
+      LETSENCRYPT_HOST: ${DOMAIN}
+      LETSENCRYPT_EMAIL: ${ADMIN_EMAIL}
+    working_dir: /app
+  # dns
+  dnsmasq:
+    image: andyshinn/dnsmasq
+    container_name: dnsmasq
+    tty: true
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    cap_add:
+      - NET_ADMIN
+    command: -A /kc/${DOCKER_MACHINE_IP} --log-facility=-
+
+  # nginx
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - nginx:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  
+  nginx-proxy-letsencrypt:
+    depends_on:
+      - nginx-proxy
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: nginx-proxy-letsencrypt
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
+      DEFAULT_EMAIL: ${ADMIN_EMAIL}
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - nginx:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  certs:
+  vhost:
+  nginx:
+
+# Docker Network
+networks:
+  default:
+    driver: bridge

@@ -1,14 +1,68 @@
 #!/bin/sh
+ensure_docker_ip()
+{
+    cat .env | grep DOCKER_MACHINE_IP || echo "\nDOCKER_MACHINE_IP=$(docker-machine ip)" >> .env;
+}
+
 case $1 in
+bm | build_machine)
+    docker-machine create default
+    eval "$(docker-machine env default)"
+    ensure_docker_ip
+
+    break;;
 bi | build_image)
     docker build --tag short_url:dev .
-    break
+    
+    break;;
+start)
+    docker-compose up -d db # start db first
+    docker-compose up -d --remove-orphans
+    
+    break;;
+stop)
+    docker-compose down
+    
+    break;;
+logs)
+    docker-compose logs -f
+    
+    break;;
+flush_dns)
+    sudo killall -TERM mDNSResponder
+    break;;
+app | db | dns | nginx-proxy)
+case $2 in
+    shell)
+        docker-compose exec $1 /bin/bash
+       
+        break;;
+    logs)
+        docker-compose logs -f $1
+
+        break;;
+    *)
+cat << EndOfMessage
+    Dev Service Tool
+        commands:
+            {service} shell    "opens a shell on the container"
+            {service} logs     "show logs of service"
+EndOfMessage
     ;;
-dcp)
-    docker container prune
-    break
-    ;;
+    esac;;
 *)
-    echo "No command"
+cat << EndOfMessage
+    Dev Tool
+        commands:
+            bm | build_machine "builds the docker machine with name default"
+            bi | build_image   "build the app image"
+            start              "starts all the services"
+            stop               "stops all the services"
+            logs               "show all logs"
+        
+        service commands: app | db | dns | nginx-proxy
+            {service} shell    "opens a shell on the container"
+            {service} logs     "show logs of service"
+EndOfMessage
     ;;
 esac
