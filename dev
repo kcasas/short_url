@@ -14,7 +14,7 @@ bm | build_machine)
     docker-machine create default
     ensure_docker_ip
     cat << EOF > .resolver
-nameserver $(docker-machine ip $2)
+nameserver $(docker-machine ip)
 port 53
 EOF
     break;;
