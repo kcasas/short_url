@@ -101,5 +101,6 @@ func TestExpandURL(t *testing.T) {
 	r.NoError(err)
 
 	actual, err := a.ExpandURL(short)
+	r.NoError(err)
 	r.Equal(longurl, actual)
 }
