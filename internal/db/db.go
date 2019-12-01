@@ -14,6 +14,7 @@ var defaultDB *gorm.DB
 
 func init() {
 	dsn := viper.GetString("DB_DSN")
+	logrus.Debug(dsn)
 	if len(dsn) <= 0 {
 		logrus.Fatal(errors.New("DB_DSN is empty"))
 	}

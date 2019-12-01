@@ -47,3 +47,15 @@ func (a *Adapter) SaveURL(short string, long string, expSecs int64) error {
 
 	return a.db.Create(&urlModel).Error
 }
+
+func (a *Adapter) ExpandURL(short string) (longURL string, err error) {
+	urlModel := models.URL{}
+
+	err = a.db.Raw(
+		"SELECT long_url FROM urls WHERE short = ? AND (exp_at > ? OR exp_at IS NULL) LIMIT 1",
+		short,
+		time.Now().UTC(),
+	).Scan(&urlModel).Error
+
+	return urlModel.LongURL, err
+}

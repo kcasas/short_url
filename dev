@@ -1,13 +1,42 @@
 #!/bin/sh
 case $1 in
+bm | build_machine)
+    docker-machine create default
+    eval "$(docker-machine env default)"
+
+    break;;
 bi | build_image)
     docker build --tag short_url:dev .
-    break
-    ;;
+    
+    break;;
 dcp)
     docker container prune
-    break
-    ;;
+    
+    break;;
+rc | refresh_containers)
+    docker-compose stop
+    docker-compose rm
+    docker-compose up -d
+    break;;
+short_url | db | dns | nginx-proxy)
+case $2 in
+    start)
+        docker-compose exec -d $1 make run_dev
+        break;;
+    shell)
+        docker-compose exec $1 /bin/bash
+       
+        break;;
+    update)
+        docker-compose build $1
+        docker-compose up -d $1
+        
+        break;;
+    bootstrap)
+        docker-compose run -d $1 make migrate
+        
+        break;;
+    esac;;
 *)
     echo "No command"
     ;;

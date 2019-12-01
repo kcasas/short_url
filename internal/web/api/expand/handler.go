@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/kcasas/short_url/internal/db"
-	"github.com/kcasas/short_url/internal/db/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,16 +25,15 @@ func Handler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	urlModel := models.URL{Short: payload.Short}
-	err = urlModel.Expand(db.DB())
-
+	dbAdapter := db.NewAdapter(db.DB())
+	longURL, err := dbAdapter.ExpandURL(payload.Short)
 	if err != nil {
 		rw.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	err = json.NewEncoder(rw).Encode(&JsonResponse{
-		Long: urlModel.LongURL,
+		Long: longURL,
 	})
 	logrus.Error(err)
 }

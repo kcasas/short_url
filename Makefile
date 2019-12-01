@@ -28,6 +28,13 @@ ensure_migrator:
 migrate:
 	make ensure_migrator
 	$(GOPATH)/bin/migrate.$(HOSTOS)-amd64 -database "mysql://$(DB_DSN)" -path migrations/ -verbose up
+ifneq ($(TEST_DSN),)
+	$(GOPATH)/bin/migrate.$(HOSTOS)-amd64 -database "mysql://$(TEST_DSN)" -path migrations/ -verbose up
+endif
 
 test:
+ifneq ($(TEST_DSN),)
+	DB_DSN=$(TEST_DSN) go test -cover -race ./...
+else
 	go test -cover -race ./...
+endif

@@ -1,9 +1,10 @@
 package log
 
 import (
+	"os"
+
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"os"
 )
 
 func init() {

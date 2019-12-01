@@ -1,0 +1,59 @@
+version: '3'
+services:
+  # mysql database
+  db:
+    image: mysql:5.6
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: short_url
+      MYSQL_ROOT_PASSWORD: 123456
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+  # url shortener app
+  short_url:
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: short_url
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8080:8080"
+    environment:
+      DB_DSN: root:123456@tcp(db:3306)/short_url
+      SERVICE_TAGS: dev
+      SERVICE_NAME: short_url
+      VIRTUAL_HOST: short.kc
+    working_dir: /app
+  # dns
+  dns:
+    image: jpillora/dnsmasq
+    container_name: dns
+    restart: unless-stopped
+    ports:
+      - "5380:8080"
+      - "53:53/udp"
+    volumes:
+      - "./docker/dnsmasq.conf:/etc/dnsmasq.conf"
+    environment:
+      HTTP_USER: admin
+      HTTP_PASS: 123456
+  # nginx
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+# Docker Network
+networks:
+  default:
+    driver: bridge

@@ -8,8 +8,15 @@ FROM golang@sha256:c94c082fbfd00975dfef89d439ff9e0059e1816175093f5a2e80541acb8f9
 
 WORKDIR /app
 
-COPY . .
+COPY Makefile Makefile
 
-RUN go mod tidy
+RUN make ensure_migrator
+
+# cache go modules
+COPY go.mod go.mod
+COPY go.sum go.sum
+RUN go mod download
+
+COPY . .
 
 EXPOSE 8080
