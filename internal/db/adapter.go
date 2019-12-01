@@ -11,6 +11,12 @@ type Adapter struct {
 	db *gorm.DB
 }
 
+type DBAdapter interface {
+	CreateID() (int64, error)
+	SaveURL(short string, longURL string, exp int64) error
+	ExpandURL(short string) (longURL string, err error)
+}
+
 func NewAdapter(db *gorm.DB) *Adapter {
 	return &Adapter{db}
 }

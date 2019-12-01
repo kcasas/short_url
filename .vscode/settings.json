@@ -9,6 +9,9 @@
             "source.organizeImports": true,
         }
     },
+    "go.testEnvVars": {
+        "DB_DSN": "root:123456@tcp(192.168.99.101:3306)/short_url_test?parseTime=true",
+    },
     "gopls": {
         "usePlaceholders": true, // add parameter placeholders when completing a function
         "completeUnimported": true, // autocomplete unimported packages

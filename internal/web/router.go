@@ -4,8 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/kcasas/short_url/internal/db"
+	"github.com/kcasas/short_url/internal/urlconv"
 	"github.com/kcasas/short_url/internal/web/api/expand"
 	"github.com/kcasas/short_url/internal/web/api/shorten"
+	"github.com/spf13/viper"
 )
 
 func Router() *mux.Router {
@@ -15,9 +18,23 @@ func Router() *mux.Router {
 		_, _ = rw.Write([]byte("ok"))
 	})
 
+	dbAdapter := db.NewAdapter(db.DB())
+
+	prefixer := urlconv.NewRandomizer(
+		viper.GetInt64("PREFIX_MIN"),
+		viper.GetInt64("PREFIX_MAX"),
+	)
+
 	api := router.PathPrefix("/api").Subrouter()
-	api.HandleFunc("/shorten", shorten.Handler).Methods(http.MethodPost)
-	api.HandleFunc("/expand", expand.Handler).Methods(http.MethodPost)
+	api.Handle(
+		"/shorten",
+		shorten.NewShortenHandler(dbAdapter, prefixer),
+	).Methods(http.MethodPost)
+
+	api.Handle(
+		"/expand",
+		expand.NewExpandHandler(dbAdapter),
+	).Methods(http.MethodPost)
 
 	return router
 }
