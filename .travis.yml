@@ -12,12 +12,12 @@ services:
 env:
   global:
     - GO111MODULE=on
-    - DB_DSN="travis@tcp(localhost:3306)/short_url_test"
+    - TEST_DSN="travis@tcp(localhost:3306)/short_url_test?parseTime=true"
   matrix:
     - TASK="make lint"
     - TASK="make test"
 before_install:
   - mysql -e "DROP DATABASE IF EXISTS short_url_test; CREATE DATABASE short_url_test;"
-  - make migrate
+  - make migrate_test
 script:
   sh -c "$TASK"

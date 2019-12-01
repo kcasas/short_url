@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/kcasas/short_url/internal/db"
 	"github.com/kcasas/short_url/internal/urlconv"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 type JsonResponse struct {
@@ -15,7 +13,16 @@ type JsonResponse struct {
 	Long  string `json:"long"`
 }
 
-func Handler(rw http.ResponseWriter, r *http.Request) {
+type ShortenHandler struct {
+	db       urlconv.DBAdapter
+	prefixer urlconv.Prefixer
+}
+
+func NewShortenHandler(adapter urlconv.DBAdapter, prefixer urlconv.Prefixer) *ShortenHandler {
+	return &ShortenHandler{adapter, prefixer}
+}
+
+func (handler *ShortenHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	payload := RequestPayload{}
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
@@ -31,16 +38,10 @@ func Handler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbAdapter := db.NewAdapter(db.DB())
-	prefixer := urlconv.NewRandomizer(
-		viper.GetInt64("PREFIX_MIN"),
-		viper.GetInt64("PREFIX_MAX"),
-	)
-
-	shortener := urlconv.NewShortener(dbAdapter, prefixer)
-
+	shortener := urlconv.NewShortener(handler.db, handler.prefixer)
 	shorturl, err := shortener.Shorten(payload.URL, payload.Expiration)
 	if err != nil {
+		logrus.Error(err)
 		rw.WriteHeader(http.StatusInternalServerError)
 	}
 

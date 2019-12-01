@@ -6,6 +6,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/kcasas/short_url/internal/config"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

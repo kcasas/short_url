@@ -16,17 +16,25 @@ type JsonResponse struct {
 	Long string `json:"long"`
 }
 
-func Handler(rw http.ResponseWriter, r *http.Request) {
+type ExpandHandler struct {
+	db db.DBAdapter
+}
+
+func NewExpandHandler(adapter db.DBAdapter) *ExpandHandler {
+	return &ExpandHandler{adapter}
+}
+
+func (handler *ExpandHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	payload := RequestPayload{}
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
+		logrus.Error(err)
 		rw.WriteHeader(http.StatusBadRequest)
 		_, _ = rw.Write([]byte(err.Error()))
 		return
 	}
 
-	dbAdapter := db.NewAdapter(db.DB())
-	longURL, err := dbAdapter.ExpandURL(payload.Short)
+	longURL, err := handler.db.ExpandURL(payload.Short)
 	if err != nil {
 		rw.WriteHeader(http.StatusNotFound)
 		return
@@ -35,5 +43,7 @@ func Handler(rw http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(rw).Encode(&JsonResponse{
 		Long: longURL,
 	})
-	logrus.Error(err)
+	if err != nil {
+		logrus.Error(err)
+	}
 }
