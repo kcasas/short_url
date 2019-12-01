@@ -14,5 +14,6 @@
 # Built binaries
 bin
 
+.env
 .vagrant
 Vagrantfile

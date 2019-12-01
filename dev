@@ -3,6 +3,7 @@ case $1 in
 bm | build_machine)
     docker-machine create default
     eval "$(docker-machine env default)"
+    echo DOCKER_MACHINE_IP=$(docker-machine ip) > .env
 
     break;;
 bi | build_image)
@@ -17,6 +18,9 @@ rc | refresh_containers)
     docker-compose stop
     docker-compose rm
     docker-compose up -d
+    break;;
+flush_dns)
+    sudo killall -TERM mDNSResponder
     break;;
 short_url | db | dns | nginx-proxy)
 case $2 in
