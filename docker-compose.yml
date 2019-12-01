@@ -9,14 +9,14 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: short_url
-      MYSQL_ROOT_PASSWORD: 123456
-      SERVICE_TAGS: dev
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       SERVICE_NAME: mysql
   # url shortener app
   short_url:
     depends_on:
       - db
+      - nginx-proxy-letsencrypt
     build:
       context: .
       dockerfile: Dockerfile
@@ -26,10 +26,11 @@ services:
     ports:
       - "8080:8080"
     environment:
-      DB_DSN: root:123456@tcp(db:3306)/short_url
-      SERVICE_TAGS: dev
+      DB_DSN: root:${DB_PASSWORD}@tcp(db:3306)/short_url
       SERVICE_NAME: short_url
-      VIRTUAL_HOST: bit.kc
+      VIRTUAL_HOST: ${DOMAIN}
+      LETSENCRYPT_HOST: ${DOMAIN}
+      LETSENCRYPT_EMAIL: ${ADMIN_EMAIL}
     working_dir: /app
   # dns
   dnsmasq:
@@ -49,8 +50,31 @@ services:
     container_name: nginx-proxy
     ports:
       - "80:80"
+      - "443:443"
     volumes:
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - nginx:/usr/share/nginx/html
       - /var/run/docker.sock:/tmp/docker.sock:ro
+  
+  nginx-proxy-letsencrypt:
+    depends_on:
+      - nginx-proxy
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: nginx-proxy-letsencrypt
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
+      DEFAULT_EMAIL: ${ADMIN_EMAIL}
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - nginx:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  certs:
+  vhost:
+  nginx:
 
 # Docker Network
 networks:

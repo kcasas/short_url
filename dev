@@ -1,9 +1,14 @@
 #!/bin/sh
+ensure_docker_ip()
+{
+    cat .env | grep DOCKER_MACHINE_IP || echo "\nDOCKER_MACHINE_IP=$(docker-machine ip)" >> .env;
+}
+
 case $1 in
 bm | build_machine)
     docker-machine create default
     eval "$(docker-machine env default)"
-    echo DOCKER_MACHINE_IP=$(docker-machine ip) > .env
+    ensure_docker_ip
 
     break;;
 bi | build_image)
@@ -17,7 +22,7 @@ dcp)
 rc | refresh_containers)
     docker-compose stop
     docker-compose rm
-    docker-compose up -d
+    docker-compose up -d --remove-orphans
     break;;
 flush_dns)
     sudo killall -TERM mDNSResponder
@@ -26,6 +31,9 @@ short_url | db | dns | nginx-proxy)
 case $2 in
     start)
         docker-compose exec -d $1 make run_dev
+        break;;
+    stop)
+        docker-compose stop $1
         break;;
     shell)
         docker-compose exec $1 /bin/bash
@@ -39,6 +47,10 @@ case $2 in
     bootstrap)
         docker-compose run -d $1 make migrate
         
+        break;;
+    logs)
+        docker-compose logs $1
+
         break;;
     esac;;
 *)
