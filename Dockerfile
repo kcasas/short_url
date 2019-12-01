@@ -19,4 +19,4 @@ RUN go mod download
 
 COPY . .
 
-EXPOSE 8080
+ENTRYPOINT ["/app/entrypoint.sh"]

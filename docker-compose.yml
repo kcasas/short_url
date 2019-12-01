@@ -5,7 +5,6 @@ services:
     image: mysql:5.6
     container_name: db
     restart: unless-stopped
-    tty: true
     ports:
       - "3306:3306"
     environment:
@@ -13,21 +12,23 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       SERVICE_NAME: mysql
   # url shortener app
-  short_url:
+  app:
     depends_on:
       - db
       - nginx-proxy-letsencrypt
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: short_url
+    image: short_url:dev
+    command: ["make", "run_dev"]
+    container_name: app
     restart: unless-stopped
     tty: true
     ports:
       - "8080:8080"
     environment:
       DB_DSN: root:${DB_PASSWORD}@tcp(db:3306)/short_url
-      SERVICE_NAME: short_url
+      SERVICE_NAME: app
       VIRTUAL_HOST: ${DOMAIN}
       LETSENCRYPT_HOST: ${DOMAIN}
       LETSENCRYPT_EMAIL: ${ADMIN_EMAIL}

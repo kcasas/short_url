@@ -48,5 +48,7 @@ func Handler(rw http.ResponseWriter, r *http.Request) {
 		Short: shorturl,
 		Long:  payload.URL,
 	})
-	logrus.Error(err)
+	if err != nil {
+		logrus.Error(err)
+	}
 }

@@ -15,45 +15,33 @@ bi | build_image)
     docker build --tag short_url:dev .
     
     break;;
-dcp)
-    docker container prune
+start)
+    docker-compose up -d db # start db first
+    docker-compose up -d --remove-orphans
     
     break;;
-rc | refresh_containers)
-    docker-compose stop
-    docker-compose rm
-    docker-compose up -d --remove-orphans
+logs)
+    docker-compose logs
+    
     break;;
 flush_dns)
     sudo killall -TERM mDNSResponder
     break;;
-short_url | db | dns | nginx-proxy)
+app | db | dns | nginx-proxy)
 case $2 in
-    start)
-        docker-compose exec -d $1 make run_dev
-        break;;
-    stop)
-        docker-compose stop $1
-        break;;
     shell)
         docker-compose exec $1 /bin/bash
        
         break;;
-    update)
-        docker-compose build $1
-        docker-compose up -d $1
-        
-        break;;
-    bootstrap)
-        docker-compose run -d $1 make migrate
-        
-        break;;
     logs)
-        docker-compose logs $1
+        docker-compose logs -f $1
 
         break;;
+    *)
+    echo "unsupported service command"
+    ;;
     esac;;
 *)
-    echo "No command"
+    echo "invalid command"
     ;;
 esac
