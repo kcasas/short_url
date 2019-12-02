@@ -21,12 +21,12 @@ services:
       dockerfile: Dockerfile
     image: short_url:dev
     command: ["make", "run_dev"]
-    container_name: app
     restart: unless-stopped
     tty: true
     ports:
-      - "8080:8080"
+      - "8080"
     environment:
+      LOG_LEVEL: debug
       DB_DSN: root:${DB_PASSWORD}@tcp(db:3306)/${DB_NAME}
       SERVICE_NAME: app
       VIRTUAL_HOST: ${DOMAIN}
@@ -50,8 +50,8 @@ services:
     image: jwilder/nginx-proxy
     container_name: nginx-proxy
     ports:
-      - "80:80"
-      - "443:443"
+      - "80"
+      - "443"
     volumes:
       - certs:/etc/nginx/certs
       - vhost:/etc/nginx/vhost.d
@@ -71,6 +71,16 @@ services:
       - vhost:/etc/nginx/vhost.d
       - nginx:/usr/share/nginx/html
       - /var/run/docker.sock:/var/run/docker.sock:ro
+  
+  lbapp:
+    image: dockercloud/haproxy
+    links:
+      - app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "80:80"
+      - "443:443"
 
 volumes:
   certs:

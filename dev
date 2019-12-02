@@ -41,7 +41,7 @@ logs)
 flush_dns)
     sudo killall -TERM mDNSResponder
     break;;
-app | db | dns | nginx-proxy)
+app | db | dns | nginx-proxy | lbapp)
 case $2 in
     shell)
         docker-compose exec $1 /bin/bash
