@@ -49,7 +49,14 @@ func (handler *ShortenHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		Short: shorturl,
 		Long:  payload.URL,
 	})
+
+	log := logrus.WithFields(logrus.Fields{
+		"short": shorturl,
+		"long":  payload.URL,
+	})
+	log.Debug("/api/shorten")
+
 	if err != nil {
-		logrus.Error(err)
+		log.Error(err)
 	}
 }

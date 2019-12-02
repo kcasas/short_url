@@ -43,7 +43,14 @@ func (handler *ExpandHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request)
 	err = json.NewEncoder(rw).Encode(&JsonResponse{
 		Long: longURL,
 	})
+
+	log := logrus.WithFields(logrus.Fields{
+		"short": payload.Short,
+		"long":  longURL,
+	})
+	log.Debug("/api/expand")
+
 	if err != nil {
-		logrus.Error(err)
+		log.Error(err)
 	}
 }
